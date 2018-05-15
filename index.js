@@ -48,7 +48,7 @@ module.exports = function MyDPS(d) {
     function ResetDPS(){
 
         if (target_flag==1) {
-            send('Reset array :' + damagearray.length + ' target ' + target);
+            //send('Reset array :' + damagearray.length + ' target ' + target);
             damagearray.length=0;
             target_flag=0;
             counter=0;
