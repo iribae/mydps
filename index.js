@@ -12,6 +12,7 @@ module.exports = function MyDPS(d) {
 
   let gid,
   boss = new Set();
+  enraged = false,
   inHH = false,
   hpCur=0,
   hpMax=0,
@@ -59,13 +60,34 @@ module.exports = function MyDPS(d) {
   d.hook('S_DESPAWN_NPC', (e) => {
     if (!enable || inHH) return
     if (boss.has(e.gameId.toString())) {
-      endtime=Date.now();
-      battleduration = Math.floor((endtime-starttime) / 1000);
-      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + Math.floor(totaldamage*100/(hpMax-hpCur)) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
+      printoutdps();
       totaldamage=0;
       boss.delete(e.gameId.toString())
     }
   })
+
+  d.hook('S_NPC_STATUS', (e) => {
+      if (!enable || inHH) return
+      if (!boss.has(e.creature.toString())) return
+      if (e.enraged === 1 && !enraged) {
+          printoutdps();
+          enraged = true
+      } else if (e.enraged === 0 && enraged) {
+          if (hpPer === 100) return
+          printoutdps();
+          enraged = false
+      }
+  })
+
+  function printoutdps()
+  {
+    partydamage=hpMax-hpCur;
+    if(partydamage === 0) return
+    endtime=Date.now();
+    battleduration = Math.floor((endtime-starttime) / 1000);
+    if(battleduration==0) return
+    send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + Math.floor(totaldamage*100/(partydamage)) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
+  }
 
   function send(msg) { command.message(`[MYDPS] : ` + [...arguments].join('\n\t - '.clr('FFFFFF'))) }
 
