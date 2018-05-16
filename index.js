@@ -5,6 +5,9 @@ const Command = require('command')
 const Long = require("long")
 const config = require('./config.json')
 
+// credit : https://github.com/Some-AV-Popo
+String.prototype.clr = function (hexColor) { return `<font color="#${hexColor}">${this}</font>` }
+
 module.exports = function MyDPS(d) {
   const command = Command(d)
 
@@ -83,9 +86,9 @@ module.exports = function MyDPS(d) {
     endtime=Date.now()
     battleduration = Math.floor((endtime-starttime) / 1000)
     if(battleduration==0) return
-    toChat( (totaldamage.div(1000*battleduration).toFixed(1) + 'k/s '.clr('E69F00')
-            + Math.floor(totaldamage.div(partydamage)*100)  + '% '.clr('E69F00')
-            + battleduration.toFixed(0) + 'seconds'.clr('E69F00'))
+    toChat( Math.floor(totaldamage.div(1000 * battleduration)) + 'k/s '.clr('E69F00')
+            + Math.floor( totaldamage.multiply(100).div(partydamage))  + '% '.clr('E69F00')
+            + battleduration.toFixed(0) + 'seconds'.clr('E69F00') )
   }
 
 
