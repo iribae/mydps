@@ -61,7 +61,7 @@ module.exports = function MyDPS(d) {
     if (boss.has(e.gameId.toString())) {
       endtime=Date.now();
       battleduration = Math.floor((endtime-starttime) / 1000);
-      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + totaldamage.multiply(100).div(hpMax) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
+      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + Math.floor(totaldamage*100/(hpMax-hpCur)) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
       totaldamage=0;
       boss.delete(e.gameId.toString())
     }
