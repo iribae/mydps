@@ -1,5 +1,5 @@
 /**
-* Created by baehw on 2018-05-14.
+* Created by rickhyun on 2018-05-14.
 */
 const Command = require('command')
 const Long = require("long");
@@ -49,7 +49,7 @@ module.exports = function MyDPS(d) {
     }
   });
 
-  d.hook('sEachSkillResult', (e) => {
+  d.hook('S_EACH_SKILL_RESULT', (e) => {
     if (!enable || inHH) return
     if(gid.equals(e.source) && e.damage > 0 && boss.has(e.target.toString())){
       totaldamage = e.damage.add(totaldamage);
