@@ -3,77 +3,69 @@
 */
 const Command = require('command')
 const Long = require("long");
+const config = require('./config.json')
 
 module.exports = function MyDPS(d) {
-
   const command = Command(d)
 
-  let dpts=0, // dps per ten sec
-  gid,
-  bossid = new Long(0, 0),
-  bosscurHp= new Long(0,0),
-  bossmaxHp= new Long(0,0),
-  newbossflag=0,
-  starttime,
-  endtime,
-  totaldamage= new Long(0,0),
-  target = new Long(0, 0),
-  counter=0,
-  target_flag=0,
-  damagearray = [], // dps for target
-  timeout = 0;
+  let enable = config.enable;
 
-  d.hook('sLogin', (e) => {
+  let gid,
+  boss = new Set();
+  inHH = false,
+  hpCur=0,
+  hpMax=0,
+  newbossflag=0,
+  starttime=0,
+  endtime=0,
+  totaldamage= new Long(0,0);
+
+  d.hook('S_LOGIN', (e) => {
     gid=e.gameId;
   });
 
-  d.hook('sBossGageInfo', (e) => {
-    if(bossid.notEquals(e.id)){
+  d.hook('S_LOAD_TOPO', (e) => {
+    (e.zone === 9950) ? inHH = true : inHH = false
+  })
+
+  d.hook('S_BOSS_GAGE_INFO', (e) => {
+    if (!enable || inHH) return
+    // notified boss before start battle
+    if (!boss.has(e.id.toString())) {
       //new BAM
-      newbossflag=1;
+      boss.add(e.id.toString())
+      hpMax = e.maxHp;
+      newbossflag = 1;
+      totaldamage = 0;
       //send('new boss : ' + e.id + ' exboss :' + bossid);
     }
-
-    if(newbossflag==1 && bosscurHp.notEquals(bossmaxHp)){
+    hpCur = e.curHp;
+    hpPer = Math.floor((hpCur / hpMax) * 100)
+    // someone hit the boss : started battle.
+    if(newbossflag == 1 && hpCur < hpMax){
       // battle started
-      totaldamage=0;
-      starttime=Date.now();
-      newbossflag=0;
-      //send('battle started : ' + bossid + ' start at :' + starttime);
+      starttime = Date.now();
+      newbossflag = 0;
     }
-
-    bossid=e.id;
-    bosscurHp=e.curHp;
-    bossmaxHp=e.maxHp;
-
-    //send('boss gage : ' + bosscurHp + ' maxhp :' + bossmaxHp + ' bossid : ' +bossid);
-
-    if(bosscurHp.equals(0))
-    {
-      endtime=Date.now();
-
-      battleduration = Math.floor((endtime-starttime) / 1000);
-
-      //send('boss dead : ' + bossid + ' end at : ' + battleduration.toFixed(0));
-
-      //send(bossmaxHp.div(totaldamage).multiply(100).toFixed(0) + '%')
-      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + totaldamage.multiply(100).div(bossmaxHp) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
-
-      totaldamage=0;
-    }
-
   });
 
   d.hook('sEachSkillResult', (e) => {
-
-    if(gid.equals(e.source) && e.damage > 0 && e.target.equals(bossid)){
-
+    if (!enable || inHH) return
+    if(gid.equals(e.source) && e.damage > 0 && boss.has(e.target.toString())){
       totaldamage = e.damage.add(totaldamage);
-      //send('total damage : ' + totaldamage + ' bossmaxHp : ' + bossmaxHp);
-
     }
-
   });
+
+  d.hook('S_DESPAWN_NPC', (e) => {
+    if (!enable || inHH) return
+    if (boss.has(e.gameId.toString())) {
+      endtime=Date.now();
+      battleduration = Math.floor((endtime-starttime) / 1000);
+      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + totaldamage.multiply(100).div(hpMax) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
+      totaldamage=0;
+      boss.delete(e.gameId.toString())
+    }
+  })
 
   function send(msg) { command.message(`[MYDPS] : ` + [...arguments].join('\n\t - '.clr('FFFFFF'))) }
 
