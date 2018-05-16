@@ -36,6 +36,7 @@ module.exports = function MyDPS(d) {
 
     if(newbossflag==1 && bosscurHp.notEquals(bossmaxHp)){
       // battle started
+      totaldamage=0;
       starttime=Date.now();
       newbossflag=0;
       //send('battle started : ' + bossid + ' start at :' + starttime);
@@ -55,7 +56,8 @@ module.exports = function MyDPS(d) {
 
       //send('boss dead : ' + bossid + ' end at : ' + battleduration.toFixed(0));
 
-      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s' + ' duration :' + battleduration.toFixed(0));
+      //send(bossmaxHp.div(totaldamage).multiply(100).toFixed(0) + '%')
+      send( (totaldamage/1000/battleduration).toFixed(1) + ' k/s ' + totaldamage.multiply(100).div(bossmaxHp) + '%' + ' duration : ' + battleduration.toFixed(0) + 'seconds');
 
       totaldamage=0;
     }
@@ -67,8 +69,7 @@ module.exports = function MyDPS(d) {
     if(gid.equals(e.source) && e.damage > 0 && e.target.equals(bossid)){
 
       totaldamage = e.damage.add(totaldamage);
-
-      //send('total damage : ' + totaldamage);
+      //send('total damage : ' + totaldamage + ' bossmaxHp : ' + bossmaxHp);
 
     }
 
