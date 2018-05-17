@@ -20,8 +20,8 @@ module.exports = function MyDPS(d) {
       inHH = false,
       hpCur=0,
       hpMax=0,
-      exhpCur=0,
-      exhpMax=0,
+      partydamage = new Long(0,0),
+      expartydamage = new Long(0,0),
       starttime=0,
       endtime=0,
       extarget= new Long(0,0),
@@ -41,6 +41,7 @@ module.exports = function MyDPS(d) {
     boss.add(e.id.toString())
     hpMax = e.maxHp
     hpCur = e.curHp
+    partydamage = hpMax - hpCur
     hpPer = Math.floor((hpCur / hpMax) * 100)
   })
 
@@ -49,7 +50,7 @@ module.exports = function MyDPS(d) {
     if(gid.equals(e.source) && e.damage > 0 && boss.has(e.target.toString())){
     //if(e.damage > 0 && boss.has(e.target.toString())){ // for debug
       if (extarget.notEquals(e.target)){
-        if(totaldamage.gt(0)) printoutdps(exhpMax,exhpCur)
+        if(totaldamage.gt(0)) printoutdps(expartydamage)
         starttime = Date.now()
         totaldamage = e.damage
         //toChat('new')
@@ -57,15 +58,14 @@ module.exports = function MyDPS(d) {
       else totaldamage = e.damage.add(totaldamage)
       //toChat('totaldamage' + totaldamage.toString())
       extarget = e.target;
-      exhpMax = hpMax;
-      exhpCur = hpCur;
+      expartydamage = hpMax.sub(hpCur)
     }
   })
 
   d.hook('S_DESPAWN_NPC', (e) => {
     if (!enable || inHH) return
     if (boss.has(e.gameId.toString())) {
-      printoutdps(hpMax,hpCur)
+      printoutdps(partydamage)
       boss.delete(e.gameId.toString())
     }
   })
@@ -74,24 +74,27 @@ module.exports = function MyDPS(d) {
     if (!enable || inHH) return
     if (!boss.has(e.creature.toString())) return
     if (e.enraged === 1 && !enraged) {
-      printoutdps(hpMax,hpCur)
+      printoutdps(partydamage)
       enraged = true
     } else if (e.enraged === 0 && enraged) {
       if (hpPer === 100) return
-      printoutdps(hpMax,hpCur)
+      printoutdps(partydamage)
       enraged = false
     }
   })
 
-  function printoutdps(BossMaxhp,BossCurhp)
+  function printoutdps(damage)
   {
-    partydamage=BossMaxhp-BossCurhp
-    if(partydamage === 0 || totaldamage === 0) return
     endtime=Date.now()
+    if( damage === 0 || totaldamage === 0 || starttime === 0 || endtime <= starttime) {
+      toChat( 'totaldamage ' + totaldamage.toString() + 'battleduration ' + Math.floor((endtime-starttime) / 1000) + 'damage ' + damage.toString() );
+      return
+    }//debug
+    //else toChat( 'totaldamage ' + totaldamage.toString() + 'battleduration ' + Math.floor((endtime-starttime) / 1000) + 'damage ' + damage.toString() );
+
     battleduration = Math.floor((endtime-starttime) / 1000)
-    if(battleduration == 0 || starttime == 0) return
     toChat( Math.floor(totaldamage.div(1000 * battleduration)) + 'k/s '.clr('E69F00')
-            + Math.floor( totaldamage.multiply(100).div(partydamage))  + '% '.clr('E69F00')
+            + Math.floor( totaldamage.multiply(100).div(damage))  + '% '.clr('E69F00')
             + battleduration.toFixed(0) + 'seconds'.clr('E69F00') )
   }
 
@@ -114,7 +117,7 @@ module.exports = function MyDPS(d) {
       send(`${enable ? 'Enabled'.clr('56B4E9') : 'Disabled'.clr('E69F00')}`)
     }
     else if (arg == 'c' || arg=='current') {
-      printoutdps()
+      printoutdps(partydamage)
     }
     // notice
     else if (arg === 'n' || arg === 'ㅜ' || arg === 'notice') {
