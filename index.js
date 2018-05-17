@@ -20,9 +20,11 @@ module.exports = function MyDPS(d) {
       inHH = false,
       hpCur=0,
       hpMax=0,
-      newbossflag=0,
+      exhpCur=0,
+      exhpMax=0,
       starttime=0,
       endtime=0,
+      extarget= new Long(0,0),
       totaldamage= new Long(0,0)
 
   d.hook('S_LOGIN', (e) => {
@@ -36,12 +38,8 @@ module.exports = function MyDPS(d) {
   d.hook('S_BOSS_GAGE_INFO', (e) => {
     if (!enable || inHH) return
     // notified boss before start battle
-    if (!boss.has(e.id.toString())) {
-      //new BAM
-      boss.add(e.id.toString())
-      hpMax = e.maxHp
-      newbossflag = 1
-    }
+    boss.add(e.id.toString())
+    hpMax = e.maxHp
     hpCur = e.curHp
     hpPer = Math.floor((hpCur / hpMax) * 100)
   })
@@ -49,19 +47,25 @@ module.exports = function MyDPS(d) {
   d.hook('S_EACH_SKILL_RESULT', (e) => {
     if (!enable || inHH) return
     if(gid.equals(e.source) && e.damage > 0 && boss.has(e.target.toString())){
-      if(newbossflag == 1) {
+    //if(e.damage > 0 && boss.has(e.target.toString())){ // for debug
+      if (extarget.notEquals(e.target)){
+        if(totaldamage.gt(0)) printoutdps(exhpMax,exhpCur)
         starttime = Date.now()
         totaldamage = e.damage
-        newbossflag = 0
+        //toChat('new')
       }
       else totaldamage = e.damage.add(totaldamage)
+      //toChat('totaldamage' + totaldamage.toString())
+      extarget = e.target;
+      exhpMax = hpMax;
+      exhpCur = hpCur;
     }
   })
 
   d.hook('S_DESPAWN_NPC', (e) => {
     if (!enable || inHH) return
     if (boss.has(e.gameId.toString())) {
-      printoutdps()
+      printoutdps(hpMax,hpCur)
       boss.delete(e.gameId.toString())
     }
   })
@@ -70,27 +74,26 @@ module.exports = function MyDPS(d) {
     if (!enable || inHH) return
     if (!boss.has(e.creature.toString())) return
     if (e.enraged === 1 && !enraged) {
-      printoutdps()
+      printoutdps(hpMax,hpCur)
       enraged = true
     } else if (e.enraged === 0 && enraged) {
       if (hpPer === 100) return
-      printoutdps()
+      printoutdps(hpMax,hpCur)
       enraged = false
     }
   })
 
-  function printoutdps()
+  function printoutdps(BossMaxhp,BossCurhp)
   {
-    partydamage=hpMax-hpCur
+    partydamage=BossMaxhp-BossCurhp
     if(partydamage === 0 || totaldamage === 0) return
     endtime=Date.now()
     battleduration = Math.floor((endtime-starttime) / 1000)
-    if(battleduration==0) return
+    if(battleduration == 0 || starttime == 0) return
     toChat( Math.floor(totaldamage.div(1000 * battleduration)) + 'k/s '.clr('E69F00')
             + Math.floor( totaldamage.multiply(100).div(partydamage))  + '% '.clr('E69F00')
             + battleduration.toFixed(0) + 'seconds'.clr('E69F00') )
   }
-
 
   // helper
   function toChat(msg) {
