@@ -24,6 +24,6 @@ my-dps or my-dps c/n/s or my-dps nd 1000000
 
 Screenshots
 
-https://ibb.co/jFNnmJ
+![MYDPS](https://image.ibb.co/gABf6J/MYDPS.jpg)
 
-https://ibb.co/fLLziy
+![mydps](https://image.ibb.co/cs0ziy/mydps.png)
