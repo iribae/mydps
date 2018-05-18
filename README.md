@@ -21,3 +21,9 @@ seperate proxy chat channel in tera client.(with enraged-notifier probably bette
 Commands
 
 my-dps or my-dps c/n/s or my-dps nd 1000000
+
+Screenshots
+
+https://ibb.co/jFNnmJ
+
+https://ibb.co/fLLziy
