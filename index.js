@@ -48,8 +48,8 @@ module.exports = function MyDPS(d) {
 
   d.hook('S_EACH_SKILL_RESULT', (e) => {
     if (!enable || inHH) return
-    if(gid === 0) gid = e.source // for debug
     if(gid.equals(e.source) && e.damage > 0 && boss.has(e.target.toString())){
+    //if(e.damage > 0 && boss.has(e.target.toString())){
       if (extarget.notEquals(e.target)){
         if(totaldamage.gt(0)) toChat(caldps(expartydamage))
         starttime = Date.now()
@@ -133,6 +133,10 @@ module.exports = function MyDPS(d) {
     else if (arg == 'c' || arg=='current') {
       caldps(partydamage)
     }
+    else if (arg == 'nd' || arg=='notice_damage') {
+      notice_damage = arg2
+      toChat('notice_damage : ' + notice_damage);
+    }
     else if (arg == 'h' || arg=='history') {
       caldps(partydamage)
     }
@@ -150,7 +154,7 @@ module.exports = function MyDPS(d) {
       send(`Notice to screen ${notice ? 'enabled'.clr('56B4E9') : 'disabled'.clr('E69F00')}`)
       // status
     } else if (arg === 's' || arg === 'ㄴ' || arg === 'status') status()
-    else send(`Invalid argument.`.clr('FF0000') + ' dps or dps c/n/s')
+    else send(`Invalid argument.`.clr('FF0000') + ' my-dps or my-dps c/n/s or my-dps d 1000000')
   })
 
 
