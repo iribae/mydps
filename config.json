@@ -1,5 +1,5 @@
 {
     "enable": true,
     "notice": true,
-    "notice_damage": 10000000
+    "notice_damage": 2000000
 }
