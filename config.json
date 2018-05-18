@@ -1,4 +1,5 @@
 {
     "enable": true,
-    "region": false
+    "notice": true,
+    "notice_damage": 10000000
 }
