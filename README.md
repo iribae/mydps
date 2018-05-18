@@ -17,3 +17,7 @@ tera-proxy\bin\node_modules\mydps
 Usage
 
 seperate proxy chat channel in tera client.(with enraged-notifier probably better!)
+
+Commands
+
+my-dps or my-dps c/n/s or my-dps d 1000000
