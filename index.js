@@ -156,7 +156,7 @@ module.exports = function MyDPS(d) {
       send(`Notice to screen ${notice ? 'enabled'.clr('56B4E9') : 'disabled'.clr('E69F00')}`)
       // status
     } else if (arg === 's' || arg === 'ㄴ' || arg === 'status') status()
-    else send(`Invalid argument.`.clr('FF0000') + ' my-dps or my-dps c/n/s or my-dps d 1000000')
+    else send(`Invalid argument.`.clr('FF0000') + ' my-dps or my-dps c/n/s or my-dps nd 1000000')
   })
 
 
