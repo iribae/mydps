@@ -59,9 +59,9 @@ module.exports = function MyDPS(d) {
       else totaldamage = e.damage.add(totaldamage)
       //toChat('totaldamage' + totaldamage.toString())
       extarget = e.target;
-      expartydamage = hpMax.sub(hpCur)
+      expartydamage = hpMax - hpCur
 
-      if(e.damage.gt(notice_damage)) toNotice(caldps(partydamage))
+      if(e.damage.gt(notice_damage)) toNotice(caldps(expartydamage))
 
     }
   })
@@ -69,7 +69,9 @@ module.exports = function MyDPS(d) {
   d.hook('S_DESPAWN_NPC', (e) => {
     if (!enable || inHH) return
     if (boss.has(e.gameId.toString())) {
-      toChat(caldps(partydamage))
+      tmp = caldps(partydamage)
+      toChat(tmp)
+      toNotice(tmp)
       boss.delete(e.gameId.toString())
     }
   })
